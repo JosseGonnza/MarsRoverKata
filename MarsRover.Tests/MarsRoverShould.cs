@@ -22,17 +22,22 @@ namespace MarsRover.Tests;
  */
 public class MarsRoverShould
 {
+    public static IEnumerable<object[]> GetRoverStateData()
+    {
+        yield return new object[] { new NorthState(), "0:1:N" };
+        yield return new object[] { new WestState(), "-1:0:W" };
+        yield return new object[] { new SouthState(), "0:-1:S" };
+        yield return new object[] { new EastState(), "1:0:E" };
+    }
+    
     [Theory]
-    [InlineData(Compass.N,"0:1:N")]
-    [InlineData(Compass.W,"-1:0:W")]
-    [InlineData(Compass.S,"0:-1:S")]
-    [InlineData(Compass.E,"1:0:E")]
-    public void move_forward(Compass compass, string expected)
+    [MemberData(nameof(GetRoverStateData))]
+    public void move_forward(IRoverState compass, string expected)
     {
         var marsRover = new MarsRover(0, 0, compass);
-        
+
         var result = marsRover.Execute("M");
-        
+
         result.Should().Be(expected);
     }
 
@@ -41,7 +46,7 @@ public class MarsRoverShould
     [InlineData("R", "0:0:E")]
     public void change_orientation_when_initial_is_north(string command, string expected)
     {
-        var marsRover = new MarsRover(0,0, Compass.N);
+        var marsRover = new MarsRover(0,0, new NorthState());
 
         var result = marsRover.Execute(command);
 
@@ -53,7 +58,7 @@ public class MarsRoverShould
     [InlineData("R", "0:0:N")]
     public void change_orientation_when_initial_is_west(string command, string expected)
     {
-        var marsRover = new MarsRover(0,0, Compass.W);
+        var marsRover = new MarsRover(0,0, new WestState());
 
         var result = marsRover.Execute(command);
 
@@ -65,7 +70,7 @@ public class MarsRoverShould
     [InlineData("R", "0:0:S")]
     public void change_orientation_when_initial_is_east(string command, string expected)
     {
-        var marsRover = new MarsRover(0,0, Compass.E);
+        var marsRover = new MarsRover(0,0, new EastState());
 
         var result = marsRover.Execute(command);
 
@@ -77,7 +82,7 @@ public class MarsRoverShould
     [InlineData("R", "0:0:W")]
     public void change_orientation_when_initial_is_south(string command, string expected)
     {
-        var marsRover = new MarsRover(0,0, Compass.S);
+        var marsRover = new MarsRover(0,0, new SouthState());
 
         var result = marsRover.Execute(command);
 
@@ -89,7 +94,7 @@ public class MarsRoverShould
     [InlineData("LM", "-1:0:W")]
     public void process_many_commands_when_initial_orientation_is_north(string command, string expected)
     {
-        var marsRover = new MarsRover(0,0, Compass.N);
+        var marsRover = new MarsRover(0,0, new NorthState());
 
         var result = marsRover.Execute(command);
 
@@ -97,118 +102,14 @@ public class MarsRoverShould
     }
     
     [Theory(DisplayName = "process many commands when initial orientation is west")]
-    [InlineData("RM", "0:-1:S")]
-    [InlineData("LM", "0:1:N")]
+    [InlineData("RM", "0:1:N")]
+    [InlineData("LM", "0:-1:S")]
     public void process_many_commands_when_initial_orientation_is_west(string command, string expected)
     {
-        var marsRover = new MarsRover(0,0, Compass.E);
+        var marsRover = new MarsRover(0,0, new WestState());
 
         var result = marsRover.Execute(command);
 
         result.Should().Be(expected);
     }
-}
-
-public class MarsRover
-{
-    private int X { get; set; }
-    private int Y { get; set; }
-    private Compass Compass { get; set; }
-    private IRoverState State { get; set; }
-
-    public MarsRover(int x, int y, Compass compass, IRoverState initialState)
-    {
-        this.X = x;
-        this.Y = y;
-        this.Compass = compass;
-        State = initialState;
-    }
-
-    public string Execute(string command)
-    {
-        foreach (var c in command.ToCharArray())
-        {
-            if (c == 'M') 
-            {
-                switch (this.Compass)
-                {
-                    case Compass.N:
-                        this.Y++;
-                        break;
-                    case Compass.S:
-                        this.Y--;
-                        break;
-                    case Compass.W:
-                        this.X--;
-                        break;
-                    case Compass.E:
-                        this.X++;
-                        break;
-                }
-                continue;
-            }
-
-            if (c == 'L' && this.Compass == Compass.N)
-            {
-                this.Compass = Compass.W;
-                continue;
-            }
-            if (c == 'R' && this.Compass == Compass.N)
-            {
-                this.Compass = Compass.E;
-                continue;
-            }
-            
-            if (c == 'L' && this.Compass == Compass.W)
-            {
-                this.Compass = Compass.S;
-                continue;
-            }
-            if (c == 'R' && this.Compass == Compass.W)
-            {
-                this.Compass = Compass.N;
-                continue;
-            }
-            
-            if (c == 'L' && this.Compass == Compass.E)
-            {
-                this.Compass = Compass.N;
-                continue;
-            }
-            if (c == 'R' && this.Compass == Compass.E)
-            {
-                this.Compass = Compass.S;
-                continue;
-            }
-            
-            if (c == 'L' && this.Compass == Compass.S)
-            {
-                this.Compass = Compass.E;
-                continue;
-            }
-            if (c == 'R' && this.Compass == Compass.S)
-            {
-                this.Compass = Compass.W;
-                continue;
-            }
-        }
-
-        return $"{this.X}:{this.Y}:{this.Compass}";
-    }
-}
-
-public enum Compass
-{
-    N,
-    W,
-    S,
-    E
-}
-
-public interface IRoverState
-{
-    void TurnLeft(MarsRover marsRover);
-    void TurnRight(MarsRover marsRover);
-    void MoveForward(MarsRover marsRover);
-    string GetDirection();
 }
