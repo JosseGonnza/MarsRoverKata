@@ -36,14 +36,16 @@ public class MarsRoverShould
         result.Should().Be(expected);
     }
 
-    [Fact(DisplayName = "change direction")]
-    public void change_direction()
+    [Theory(DisplayName = "change direction")]
+    [InlineData("L", "0:0:W")]
+    [InlineData("R", "0:0:E")]
+    public void change_direction(string command, string expected)
     {
         var marsRover = new MarsRover(0,0, Compass.N);
 
-        var result = marsRover.Execute("L");
+        var result = marsRover.Execute(command);
 
-        result.Should().Be("0:0:W");
+        result.Should().Be(expected);
     }
 }
 
@@ -86,6 +88,10 @@ public class MarsRover
             if (c == 'L' && this.Compass == Compass.N)
             {
                 this.Compass = Compass.W;
+            }
+            if (c == 'R' && this.Compass == Compass.N)
+            {
+                this.Compass = Compass.E;
             }
         }
 
