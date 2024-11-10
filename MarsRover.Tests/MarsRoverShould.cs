@@ -40,8 +40,8 @@ public class MarsRoverShould
 
 public class MarsRover
 {
-    public int X { get; }
-    public int Y { get; }
+    public int X { get; set; }
+    public int Y { get; set; }
     public char Direction { get; }
 
     public MarsRover(int x, int y, char direction)
@@ -53,10 +53,10 @@ public class MarsRover
 
     public string Execute(string command)
     {
-        for (int i = 0; i < ; i++)
+        if (this.Direction == 'N')
         {
-            
+            this.Y++;
         }
-        return "0:1:N";
+        return $"{this.X}:{this.Y}:{this.Direction}";
     }
 }
