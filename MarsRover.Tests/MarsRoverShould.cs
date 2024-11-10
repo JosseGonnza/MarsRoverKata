@@ -4,6 +4,9 @@ namespace MarsRover.Tests;
 /*
  * 1- Initial position 0:0:N
  *      "M" -> 0:1:N    forward
+ *      "M" -> -1:0:W    forward
+ *      "M" -> 0:-1:S    forward
+ *      "M" -> 1:0:E    forward
  *
  *      "L" -> 0:0:W    turn left
  *      "LL" -> 0:0:S   turn twice left
@@ -21,20 +24,16 @@ namespace MarsRover.Tests;
  */
 public class MarsRoverShould
 {
-    [Fact]
-    public void move_forward()
+    [Theory]
+    [InlineData('N',"0:1:N")]
+    [InlineData('W',"-1:0:W")]
+    [InlineData('S',"0:-1:S")]
+    [InlineData('E',"1:0:E")]
+    public void move_forward(char direction, string expected)
     {
-        var marsRover = new MarsRover(0, 0, 'N');
+        var marsRover = new MarsRover(0, 0, direction);
         var result = marsRover.Execute("M");
-        result.Should().Be("0:1:N");
-    }
-    
-    [Fact]
-    public void move_forward2()
-    {
-        var marsRover = new MarsRover(0, 1, 'N');
-        var result = marsRover.Execute("M");
-        result.Should().Be("0:2:N");
+        result.Should().Be(expected);
     }
 }
 
@@ -56,6 +55,18 @@ public class MarsRover
         if (this.Direction == 'N')
         {
             this.Y++;
+        }
+        if (this.Direction == 'S')
+        {
+            this.Y--;
+        }
+        if (this.Direction == 'W')
+        {
+            this.X--;
+        }
+        if (this.Direction == 'E')
+        {
+            this.X++;
         }
         return $"{this.X}:{this.Y}:{this.Direction}";
     }
