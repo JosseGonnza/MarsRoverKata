@@ -9,9 +9,7 @@ namespace MarsRover.Tests;
  * 🎯     "M" -> 1:0:E    forward
  *
  * 🎯     "L" -> 0:0:W    turn left
- *      "LL" -> 0:0:S   turn twice left
  * 🎯    "R" -> 0:0:E    turn right
- *      "RR" -> 0:0:S   turn twice right
  *
  *      "RM" -> 1:0:E     turn right and forward
  *      "LM" -> -1:0:W    turn left and forward
@@ -73,6 +71,42 @@ public class MarsRoverShould
 
         result.Should().Be(expected);
     }
+    
+    [Theory(DisplayName = "change orientation when initial is south")]
+    [InlineData("L", "0:0:E")]
+    [InlineData("R", "0:0:W")]
+    public void change_orientation_when_initial_is_south(string command, string expected)
+    {
+        var marsRover = new MarsRover(0,0, Compass.S);
+
+        var result = marsRover.Execute(command);
+
+        result.Should().Be(expected);
+    }
+
+    [Theory(DisplayName = "process many commands when initial orientation is north")]
+    [InlineData("RM", "1:0:E")]
+    [InlineData("LM", "-1:0:W")]
+    public void process_many_commands_when_initial_orientation_is_north(string command, string expected)
+    {
+        var marsRover = new MarsRover(0,0, Compass.N);
+
+        var result = marsRover.Execute(command);
+
+        result.Should().Be(expected);
+    }
+    
+    [Theory(DisplayName = "process many commands when initial orientation is west")]
+    [InlineData("RM", "0:-1:S")]
+    [InlineData("LM", "0:1:N")]
+    public void process_many_commands_when_initial_orientation_is_west(string command, string expected)
+    {
+        var marsRover = new MarsRover(0,0, Compass.E);
+
+        var result = marsRover.Execute(command);
+
+        result.Should().Be(expected);
+    }
 }
 
 public class MarsRover
@@ -92,7 +126,7 @@ public class MarsRover
     {
         foreach (var c in command.ToCharArray())
         {
-            if (c == 'M')
+            if (c == 'M') 
             {
                 switch (this.Compass)
                 {
@@ -142,6 +176,17 @@ public class MarsRover
             if (c == 'R' && this.Compass == Compass.E)
             {
                 this.Compass = Compass.S;
+                continue;
+            }
+            
+            if (c == 'L' && this.Compass == Compass.S)
+            {
+                this.Compass = Compass.E;
+                continue;
+            }
+            if (c == 'R' && this.Compass == Compass.S)
+            {
+                this.Compass = Compass.W;
                 continue;
             }
         }
