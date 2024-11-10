@@ -3,10 +3,10 @@ using FluentAssertions;
 namespace MarsRover.Tests;
 /*
  * 1- Initial position 0:0:N
- *      "M" -> 0:1:N    forward
- *      "M" -> -1:0:W    forward
- *      "M" -> 0:-1:S    forward
- *      "M" -> 1:0:E    forward
+ * 🎯     "M" -> 0:1:N    forward
+ * 🎯     "M" -> -1:0:W    forward
+ * 🎯     "M" -> 0:-1:S    forward
+ * 🎯     "M" -> 1:0:E    forward
  *
  *      "L" -> 0:0:W    turn left
  *      "LL" -> 0:0:S   turn twice left
@@ -25,49 +25,78 @@ namespace MarsRover.Tests;
 public class MarsRoverShould
 {
     [Theory]
-    [InlineData('N',"0:1:N")]
-    [InlineData('W',"-1:0:W")]
-    [InlineData('S',"0:-1:S")]
-    [InlineData('E',"1:0:E")]
-    public void move_forward(char direction, string expected)
+    [InlineData(Compass.N,"0:1:N")]
+    [InlineData(Compass.W,"-1:0:W")]
+    [InlineData(Compass.S,"0:-1:S")]
+    [InlineData(Compass.E,"1:0:E")]
+    public void move_forward(Compass compass, string expected)
     {
-        var marsRover = new MarsRover(0, 0, direction);
+        var marsRover = new MarsRover(0, 0, compass);
         var result = marsRover.Execute("M");
         result.Should().Be(expected);
+    }
+
+    [Fact(DisplayName = "change direction")]
+    public void change_direction()
+    {
+        var marsRover = new MarsRover(0,0, Compass.N);
+
+        var result = marsRover.Execute("L");
+
+        result.Should().Be("0:0:W");
     }
 }
 
 public class MarsRover
 {
-    public int X { get; set; }
-    public int Y { get; set; }
-    public char Direction { get; }
+    private int X { get; set; }
+    private int Y { get; set; }
+    private Compass Compass { get; set; }
 
-    public MarsRover(int x, int y, char direction)
+    public MarsRover(int x, int y, Compass compass)
     {
-        X = x;
-        Y = y;
-        Direction = direction;
+        this.X = x;
+        this.Y = y;
+        this.Compass = compass;
     }
 
     public string Execute(string command)
     {
-        if (this.Direction == 'N')
+        foreach (var c in command.ToCharArray())
         {
-            this.Y++;
+            if (c == 'M')
+            {
+                switch (this.Compass)
+                {
+                    case Compass.N:
+                        this.Y++;
+                        break;
+                    case Compass.S:
+                        this.Y--;
+                        break;
+                    case Compass.W:
+                        this.X--;
+                        break;
+                    case Compass.E:
+                        this.X++;
+                        break;
+                }
+            }
+
+            if (c == 'L' && this.Compass == Compass.N)
+            {
+                this.Compass = Compass.W;
+            }
         }
-        if (this.Direction == 'S')
-        {
-            this.Y--;
-        }
-        if (this.Direction == 'W')
-        {
-            this.X--;
-        }
-        if (this.Direction == 'E')
-        {
-            this.X++;
-        }
-        return $"{this.X}:{this.Y}:{this.Direction}";
+
+        return $"{this.X}:{this.Y}:{this.Compass}";
     }
+}
+
+public enum Compass
+{
+    N,
+    W,
+    S,
+    E
 }
