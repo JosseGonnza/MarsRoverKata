@@ -114,12 +114,14 @@ public class MarsRover
     private int X { get; set; }
     private int Y { get; set; }
     private Compass Compass { get; set; }
+    private IRoverState State { get; set; }
 
-    public MarsRover(int x, int y, Compass compass)
+    public MarsRover(int x, int y, Compass compass, IRoverState initialState)
     {
         this.X = x;
         this.Y = y;
         this.Compass = compass;
+        State = initialState;
     }
 
     public string Execute(string command)
@@ -201,4 +203,12 @@ public enum Compass
     W,
     S,
     E
+}
+
+public interface IRoverState
+{
+    void TurnLeft(MarsRover marsRover);
+    void TurnRight(MarsRover marsRover);
+    void MoveForward(MarsRover marsRover);
+    string GetDirection();
 }
