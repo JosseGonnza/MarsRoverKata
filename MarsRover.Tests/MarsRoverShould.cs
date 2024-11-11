@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using FluentAssertions;
 
 namespace MarsRover.Tests;
@@ -111,7 +112,7 @@ public class MarsRoverShould
     [Fact(DisplayName = "process many commands when initial orientation is north and find an obstacle")]
     public void process_many_commands_when_initial_orientation_is_north_and_find_an_obstacle()
     {
-        var marsRover = new MarsRover(0, 0, Compass.N, new Grid(10, 10, new Obstacle(1, 2)));
+        var marsRover = new MarsRover(0, 0, Compass.N, new Grid(10, 10, new List<Obstacle>(){new Obstacle(1, 2)}));
 
         var result = marsRover.Execute("RMLMM");
 
@@ -131,6 +132,7 @@ public class MarsRover
         this.X = x;
         this.Y = y;
         this.Compass = compass;
+        this.Grid = new Grid(10, 10);
     }
     
     public MarsRover(int x, int y, Compass compass, Grid grid)
@@ -143,10 +145,17 @@ public class MarsRover
 
     public string Execute(string command)
     {
+        var obstacle = "";
         foreach (var c in command.ToCharArray())
         {
             if (c == 'M') 
             {
+                if (this.Grid.ContainsObstacles() && this.Compass == Compass.N && this.Grid.GoNextInY(this.X, this.Y + 1))
+                {
+                    obstacle = "O:";
+                    continue;
+                }
+                
                 switch (this.Compass)
                 {
                     case Compass.N:
@@ -210,7 +219,7 @@ public class MarsRover
             }
         }
 
-        return $"{this.X}:{this.Y}:{this.Compass}";
+        return $"{obstacle}{this.X}:{this.Y}:{this.Compass}";
     }
 }
 
@@ -218,19 +227,28 @@ public class Grid
 {
     public int Row { get; }
     public int Column { get; }
-    public Obstacle Obstacle { get; }
+    public List<Obstacle> Obstacles { get; }
 
     public Grid(int row, int column)
     {
         this.Row = row;
         this.Column = column;
+        this.Obstacles = new List<Obstacle>();
     }
     
-    public Grid(int row, int column, Obstacle obstacle)
+    public Grid(int row, int column, List<Obstacle> obstacles)
     {
         this.Row = row;
         this.Column = column;
-        this.Obstacle = obstacle;
+        this.Obstacles = obstacles;
+    }
+
+    public bool ContainsObstacles() => this.Obstacles.Count > 0;
+
+    public bool GoNextInY(int x, int nextY)
+    {
+        var obstaclesInX = Obstacles.Where(obstacle => obstacle.X == x).Select(o => o.Y);
+        return obstaclesInX.Contains(nextY);
     }
 }
 
