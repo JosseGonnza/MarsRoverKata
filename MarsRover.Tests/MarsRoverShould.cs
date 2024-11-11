@@ -107,6 +107,16 @@ public class MarsRoverShould
 
         result.Should().Be(expected);
     }
+
+    [Fact(DisplayName = "process many commands when initial orientation is north and find an obstacle")]
+    public void process_many_commands_when_initial_orientation_is_north_and_find_an_obstacle()
+    {
+        var marsRover = new MarsRover(0, 0, Compass.N, new Grid(10, 10, new Obstacle(1, 2)));
+
+        var result = marsRover.Execute("RMLMM");
+
+        result.Should().Be("O:1:1:N");
+    }
 }
 
 public class MarsRover
@@ -114,12 +124,21 @@ public class MarsRover
     private int X { get; set; }
     private int Y { get; set; }
     private Compass Compass { get; set; }
+    public Grid Grid { get; }
 
-    public MarsRover(int x, int y, Compass compass)
+    public MarsRover(int x, int y, Compass compass) // TODO: Solo un constructor, siempre se crea un grid (con o sin Obstacles)
     {
         this.X = x;
         this.Y = y;
         this.Compass = compass;
+    }
+    
+    public MarsRover(int x, int y, Compass compass, Grid grid)
+    {
+        this.X = x;
+        this.Y = y;
+        this.Compass = compass;
+        this.Grid = grid;
     }
 
     public string Execute(string command)
@@ -192,6 +211,38 @@ public class MarsRover
         }
 
         return $"{this.X}:{this.Y}:{this.Compass}";
+    }
+}
+
+public class Grid
+{
+    public int Row { get; }
+    public int Column { get; }
+    public Obstacle Obstacle { get; }
+
+    public Grid(int row, int column)
+    {
+        this.Row = row;
+        this.Column = column;
+    }
+    
+    public Grid(int row, int column, Obstacle obstacle)
+    {
+        this.Row = row;
+        this.Column = column;
+        this.Obstacle = obstacle;
+    }
+}
+
+public class Obstacle
+{
+    public int X { get; }
+    public int Y { get; }
+
+    public Obstacle(int x, int y)
+    {
+        this.X = x;
+        this.Y = y;
     }
 }
 
